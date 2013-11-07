@@ -1,0 +1,130 @@
+<html>
+    <body>
+        <link href="{{ STATIC_URL }}css/jquery.lightbox-0.5.css" rel="stylesheet">
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .thumbbox {
+                width: 192px;
+                height: 192px;
+                background: no-repeat center;
+            }
+            .imagebox {
+                float: left;
+                margin: 4px;
+                padding: 4px;
+                border-radius: 8px;
+            }
+            .imagebox:hover {
+                margin: 2px;
+                background-color: #dddddd;
+                border: 2px solid #aaaaaa;
+            }
+            .unapproved {
+                background-color: red;
+            }
+
+            .unapproved.imagebox:hover {
+                background-color: #CC3434;
+            }
+            .gallery {
+            }
+            .gallery-header {
+                letter-spacing: -2px;
+                font-size: 48px;
+                font-weight: bold;
+                font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+                background-color: #33dd33;
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+            }
+            .gallery-controls {
+                margin: -1em auto 0 auto;
+                padding: 0;
+                width: 90%;
+                display:none;
+            }
+            .imagebox:hover .gallery-controls {
+                display:block;
+            }
+            .gallery-approve {
+                display: none;
+            }
+            .gallery-delete {
+                float: right;
+            }
+            .unapproved .gallery-approve {
+                display: inline;
+            }
+            .unapproved .gallery-unapprove {
+                display: none;
+            }
+        </style>
+{% load thumbnail %}
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+        <script src="{{ STATIC_URL }}js/jquery.lightbox-0.5a.min.js"></script>
+        {% for gal in object_list %}<div class="gallery"><div class="gallery-header">{{ gal.name }}</div>
+{% for image in gal.images.all %}{% if image.approved or user.is_staff %}            <div class="imagebox{% if not image.approved %} unapproved{% endif %}"><a href="{% thumbnail image.image 'massive' %}" class="imagelink" id="a_{{ image.pk }}" data-artist="{% firstof image.artist 'Anonymous' %}" data-pk="{{ image.pk }}"{% if user.is_staff %} data-email="{{ image.email }}"{% endif %}><div class="thumbbox" style="background-image: url('{% thumbnail image.image 'galthumb' %}');"> </div></a>{% if user.is_staff %}<div class="gallery-controls"><span class="gallery-approve"><a href="#" onclick="approve({{ image.pk }});">√</a></span><span class="gallery-unapprove"><a href="#" onclick="unapprove({{ image.pk }});">O</a></span><a href="#" class="gallery-delete" onclick="del({{ image.pk }});">X</a></div>{% endif %}</div>
+{% endif %}{% endfor %}            <div style="clear: both;"></div>
+        </div>
+        {% endfor %}<script>
+            function resetTitles() {
+                $('.imagelink').each(function() {
+                    {% if user.is_staff %}
+                    var title = 'Submitted by <a href="mailto:' + $(this).data('email') + '">' + $(this).data('artist') + '</a>';
+                    if ($(this).parent().hasClass('unapproved'))
+                    {
+                        title += ' [ <a href="#" onclick="approve(' + $(this).data('pk') + ');">Approve</a> | ';
+                    } else {
+                        title += ' [ <a href="#" onclick="unapprove(' + $(this).data('pk') + ');">Unapprove</a> | ';
+                    }
+                    title += '<a href="#" onclick="del(' + $(this).data('pk') + ');">Delete</a> ]'{% else %}
+                    var title = 'Submitted by ' + $(this).data('artist');
+                    {% endif %}
+                    $(this).attr('title',title);
+                });
+            }
+            function approve(pk) {
+                $.getJSON('/mod/approve/' + pk + '/', function (data) {
+                    if (data['status'] == 'SUCCESS')
+                    {
+                        $('#a_' + pk).parent().removeClass('unapproved');
+                        resetTitles();
+                    } else {
+                        alert('Could not approve image. You may want to try refreshing, somebody else probably already did it.');
+                    }
+                });
+            }
+            function unapprove(pk) {
+                $.getJSON('/mod/unapprove/' + pk + '/', function (data) {
+                    if (data['status'] == 'SUCCESS')
+                    {
+                        $('#a_' + pk).parent().addClass('unapproved');
+                        resetTitles();
+                    } else {
+                        alert('Could not unapprove image. You may want to try refreshing, somebody else probably already did it.');
+                    }
+                });
+            }
+            function del(pk) {
+                if (confirm("Are you sure you want to delete this image?"))
+                $.getJSON('/mod/delete/' + pk + '/', function (data) {
+                    if (data['status'] == 'SUCCESS')
+                    {
+                        $('#a_' + pk).parent().remove();
+                    } else {
+                        alert('Could not delete image. You may want to try refreshing, somebody else probably already did it.');
+                    }
+                });
+            }
+
+            $(function() {
+                resetTitles();
+                $('.gallery a.imagelink').lightBox();
+            });
+        </script>
+    </body>
+</html>
