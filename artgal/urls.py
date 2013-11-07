@@ -14,7 +14,7 @@ urlpatterns = patterns('',
     # url(r'^$', 'artgal.views.home', name='home'),
     # url(r'^artgal/', include('artgal.foo.urls')),
     url(r'^upload/$', ImageUploadAddView.as_view()),
-    url(r'^list/$', ImageUploadListView.as_view()),
+    url(r'^$', ImageUploadListView.as_view()),
     url(r'^mod/(?P<action>\w+)/(?P<pk>\d+)/$', staff_member_required(QuickActionView.as_view())),
 
     # Uncomment the admin/doc line below to enable admin documentation:

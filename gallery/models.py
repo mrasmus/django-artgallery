@@ -5,7 +5,7 @@ from athumb.fields import ImageWithThumbsField
 
 
 def upload_image_name(instance, filename):
-    result = 'hhpgallery/uploads/'
+    result = 'hhgallery/uploads/'
     result += slugify(instance.gallery.name)+'-'
     return result+str(ImageUpload.objects.count())+'-'+filename
 

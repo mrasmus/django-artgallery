@@ -70,6 +70,7 @@
 {% for image in gal.images.all %}{% if image.approved or user.is_staff %}            <div class="imagebox{% if not image.approved %} unapproved{% endif %}"><a href="{% thumbnail image.image 'massive' %}" class="imagelink" id="a_{{ image.pk }}" data-artist="{% firstof image.artist 'Anonymous' %}" data-pk="{{ image.pk }}"{% if user.is_staff %} data-email="{{ image.email }}"{% endif %}><div class="thumbbox" style="background-image: url('{% thumbnail image.image 'galthumb' %}');"> </div></a>{% if user.is_staff %}<div class="gallery-controls"><span class="gallery-approve"><a href="#" onclick="approve({{ image.pk }});">√</a></span><span class="gallery-unapprove"><a href="#" onclick="unapprove({{ image.pk }});">O</a></span><a href="#" class="gallery-delete" onclick="del({{ image.pk }});">X</a></div>{% endif %}</div>
 {% endif %}{% endfor %}            <div style="clear: both;"></div>
         </div>
+            <a href="/upload/">Upload Form</a> | <a href="/admin/">Admin Panel</a>
         {% endfor %}<script>
             function resetTitles() {
                 $('.imagelink').each(function() {
